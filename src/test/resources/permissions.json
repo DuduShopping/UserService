@@ -1,0 +1,37 @@
+{
+  "ApiEndpoints": [
+    {
+      "ApiEndpointId": 1,
+      "Method": "GET",
+      "Endpoint": "/resource"
+    },
+    {
+      "ApiEndpointId": 2,
+      "Method": "POST",
+      "Endpoint": "/wallet"
+    },
+    {
+      "ApiEndpointId": 3,
+      "Method": "POST",
+      "Endpoint": "/login",
+      "IsPublic": true
+    },
+    {
+      "ApiEndpointId": 4,
+      "Method": "POST",
+      "Endpoint": "/private",
+      "IsPrivate": true
+    },
+    {
+      "ApiEndpointId": 5,
+      "Method": "POST",
+      "Endpoint": "/other"
+    }
+  ],
+  "Scopes": [
+    {
+      "ScopeName": "Customer",
+      "ApiEndpointIds": [1,2]
+    }
+  ]
+}
