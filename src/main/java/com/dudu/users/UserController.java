@@ -3,6 +3,7 @@ package com.dudu.users;
 import com.dudu.common.UserServiceDataSource;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -18,9 +19,8 @@ public class UserController {
         this.source = source;
     }
 
-    @RequestMapping(path = "/greeting")
-    public String greeting() {
-
-        return "hi";
+    @RequestMapping(path = "/user")
+    public String user() {
+        return "uesr";
     }
 }
