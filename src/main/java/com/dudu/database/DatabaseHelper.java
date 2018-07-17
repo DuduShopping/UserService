@@ -8,8 +8,23 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
+/**
+ * Created by chaojiewang on 1/29/18.
+ */
 public class DatabaseHelper {
-    private static final Logger logger = LogManager.getLogger(DBHelper.class);
+    private static final Logger logger = LogManager.getLogger(DatabaseHelper.class);
+
+    public static DatabaseHelper getHelper() {
+        return helper;
+    }
+
+    public static void setHelper(DatabaseHelper helper) {
+        DatabaseHelper.helper = helper;
+    }
+
+    private static DatabaseHelper helper = new DatabaseHelper();
+
+    private DatabaseHelper() {}
 
     public List<ZetaMap> execToZetaMaps(PreparedStatement ps) throws SQLException {
         try (ResultSet rs = ps.executeQuery()) {
@@ -25,7 +40,7 @@ public class DatabaseHelper {
         logger.info("execToZetaMap: " + sql);
         try (PreparedStatement ps = con.prepareStatement(sql)) {
             for (int i = 1; i <= parameters.length; i++) {
-                Object param = parameters[i - 1];
+                Object param = parameters[i-1];
                 if (param instanceof Character)
                     ps.setObject(i, param.toString());
                 else if (param instanceof Date)
@@ -51,14 +66,14 @@ public class DatabaseHelper {
      * @param sql
      * @param parameters
      * @return either (1) the row count for SQL Data Manipulation Language (DML) statements
-     * or (2) 0 for SQL statements that return nothing
+     *         or (2) 0 for SQL statements that return nothing
      * @throws SQLException
      */
     public int execUpdate(Connection con, String sql, Object... parameters) throws SQLException {
         logger.info("execUpdate: " + sql);
         try (PreparedStatement ps = con.prepareStatement(sql)) {
             for (int i = 1; i <= parameters.length; i++) {
-                Object param = parameters[i - 1];
+                Object param = parameters[i-1];
                 if (param instanceof Character)
                     ps.setObject(i, param.toString());
                 else if (param instanceof Date)
@@ -85,6 +100,7 @@ public class DatabaseHelper {
     }
 
     /**
+     *
      * @param con
      * @param sql
      * @param generatedKeys
@@ -96,7 +112,7 @@ public class DatabaseHelper {
         logger.info("execUpdate: " + sql);
         try (PreparedStatement ps = con.prepareStatement(sql, generatedKeys)) {
             for (int i = 1; i <= parameters.length; i++) {
-                Object param = parameters[i - 1];
+                Object param = parameters[i-1];
                 if (param instanceof Character)
                     ps.setObject(i, param.toString());
                 else if (param instanceof Date)
@@ -111,7 +127,7 @@ public class DatabaseHelper {
             while (rs.next()) {
                 ZetaMap map = new ZetaMap();
                 for (int i = 1; i <= generatedKeys.length; i++)
-                    map.put(generatedKeys[i - 1], rs.getObject(i));
+                    map.put(generatedKeys[i-1], rs.getObject(i));
                 zetaMaps.add(map);
             }
 

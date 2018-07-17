@@ -50,7 +50,7 @@ public class StoredProcedure {
                 sp.setObject(i+1, val);
             }
 
-            return DBHelper.execToZetaMaps(sp);
+            return DatabaseHelper.getHelper().execToZetaMaps(sp);
         }
     }
 }

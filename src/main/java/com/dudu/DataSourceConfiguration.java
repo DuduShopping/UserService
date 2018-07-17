@@ -54,9 +54,4 @@ public class DataSourceConfiguration {
             return null;
         }
     }
-
-    @Bean
-    public DatabaseHelper getDatabaseHelper() {
-        return new DatabaseHelper();
-    }
 }
