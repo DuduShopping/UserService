@@ -1,46 +1,35 @@
 package com.dudu.users;
 
-import org.json.JSONObject;
-import org.junit.Assert;
+import com.dudu.common.UserServiceDataSource;
+import org.junit.Assume;
+import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
-import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringRunner;
-import org.springframework.test.web.servlet.MockMvc;
-import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
-
-import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
 @RunWith(value = SpringRunner.class)
-@WebMvcTest(UserController.class)
+@ContextConfiguration(classes = {com.dudu.DataSourceConfiguration.class})
 public class UserControllerTest {
 
     @Autowired
-    private MockMvc mvc;
+    private UserServiceDataSource source;
 
-    @MockBean
     private UserController userController;
 
-    @Test
-    public void createUser() throws Exception {
-        JSONObject requestBody = new JSONObject();
-        requestBody.put("login", "jack");
-        requestBody.put("password", "test123");
-        var mockRequest = MockMvcRequestBuilders
-                .post("/user")
-                .param("login", "jack")
-                .param("password", "123456");
-
-        mvc.perform(mockRequest)
-                .andExpect(status().is2xxSuccessful())
-                .andDo(print());
+    @Before
+    public void setup() {
+        Assume.assumeTrue(source != null);
+        userController = new UserController(source);
     }
 
     @Test
-    public void test() {
-        Assert.assertNotNull(userController);
+    public void createUser() throws Exception {
+        UserController.UserCreation userCreation = new UserController.UserCreation();
+        userCreation.setLogin("jack3");
+        userCreation.setPassword("test123");
+
+        User user = userController.createUser(userCreation);
     }
 }

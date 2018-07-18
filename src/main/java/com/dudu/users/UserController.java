@@ -1,8 +1,11 @@
 package com.dudu.users;
 
+import com.dudu.common.CryptoUtil;
 import com.dudu.common.UserServiceDataSource;
 import com.dudu.database.DatabaseHelper;
 import com.dudu.database.ZetaMap;
+import com.dudu.exception.BadRequestException;
+import com.dudu.exception.InternalServerException;
 import com.dudu.exception.NotFoundException;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -11,6 +14,8 @@ import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RestController;
 
 import javax.sql.DataSource;
+import javax.validation.Valid;
+import javax.validation.constraints.NotEmpty;
 import java.sql.Connection;
 import java.sql.SQLException;
 import java.util.List;
@@ -34,19 +39,20 @@ public class UserController {
     }
 
     @RequestMapping(value = "/user", method = RequestMethod.POST)
-    public User createUser(UserCreation req) {
+    public User createUser(@Valid UserCreation req) {
         logger.info("creating a user: " + req.toString());
         try (Connection conn = source.getConnection()) {
             var sql = "INSERT INTO Users(Login, Password) VALUES (?,?) ";
-            var zmaps = databaseHelper.execUpdateToZetaMaps(conn, sql, new String[]{"UserId"}, req.getLogin(), req.getPassword());
+            var hashed = hashPassword(req.getPassword());
+            var zmaps = databaseHelper.execUpdateToZetaMaps(conn, sql, new String[]{"UserId"}, req.getLogin(), hashed);
             if (zmaps.size() == 0)
-                throw new NotFoundException("");
+                throw new InternalServerException("");
 
             long id = zmaps.get(0).getLong("UserId");
             return getUser(id);
-        } catch (SQLException e) {
+        } catch (Exception e) {
             logger.info(e);
-            throw new NotFoundException("Failed to create user");
+            throw new BadRequestException("Failed to create user", e);
         }
     }
 
@@ -55,17 +61,24 @@ public class UserController {
             String sql = "SELECT * FROM Users WHERE UserId = ?";
             List<ZetaMap> zetaMaps = databaseHelper.execToZetaMaps(conn, sql, userId);
             if (zetaMaps.size() == 0)
-                throw new NotFoundException("User not found: UserId="+userId);
+                throw new IllegalArgumentException("User not found: UserId="+userId);
 
             return User.from(zetaMaps.get(0));
         } catch (SQLException e) {
             logger.info(e);
-            throw new NotFoundException("Failed to get user");
+            throw new IllegalArgumentException("Failed to get user", e);
         }
     }
 
+    private String hashPassword(String password) {
+        return CryptoUtil.sha256base64(SALT + password);
+    }
+
     public static class UpdatePassword {
+        @NotEmpty
         private String oldPassword;
+
+        @NotEmpty
         private String newPassword;
 
         public String getOldPassword() {
@@ -86,7 +99,10 @@ public class UserController {
     }
 
     public static class UserCreation {
+        @NotEmpty
         private String login;
+
+        @NotEmpty
         private String password;
 
         public String getLogin() {

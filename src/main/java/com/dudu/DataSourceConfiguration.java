@@ -1,7 +1,6 @@
 package com.dudu;
 
 import com.dudu.common.UserServiceDataSource;
-import com.dudu.database.DatabaseHelper;
 import com.zaxxer.hikari.HikariConfig;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
