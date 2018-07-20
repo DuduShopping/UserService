@@ -1,4 +1,4 @@
-package com.dudu.common;
+package com.dudu.oauth;
 
 import java.util.Objects;
 import java.util.Set;

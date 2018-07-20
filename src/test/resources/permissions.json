@@ -19,19 +19,27 @@
     {
       "ApiEndpointId": 4,
       "Method": "POST",
-      "Endpoint": "/private",
-      "IsPrivate": true
+      "Endpoint": "/private"
     },
     {
       "ApiEndpointId": 5,
       "Method": "POST",
       "Endpoint": "/other"
+    },
+    {
+      "ApiEndpointId": 6,
+      "Method": "POST",
+      "Endpoint": "/*"
     }
   ],
   "Scopes": [
     {
       "ScopeName": "Customer",
       "ApiEndpointIds": [1,2]
-    }
+    },
+    {
+      "ScopeName": "Superman",
+      "ApiEndpointIds": [6]
+    },
   ]
 }

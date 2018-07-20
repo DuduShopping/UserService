@@ -1,6 +1,6 @@
 package com.dudu;
 
-import com.dudu.common.PermissionManager;
+import com.dudu.oauth.PermissionManager;
 import org.junit.Assume;
 import org.junit.Before;
 import org.junit.Test;
@@ -21,9 +21,11 @@ public class PermissionManagerTest {
 
     @Test
     public void isPublicPermitted() throws Exception {
-        System.out.println(permissionManager.isPublicPermitted("Customer", "/resource", "GET"));
-        System.out.println(permissionManager.isPublicPermitted("", "/login", "POST"));
-        System.out.println(permissionManager.isPublicPermitted("Customer", "/private", "POST"));
-        System.out.println(permissionManager.isPublicPermitted("Customer", "/other", "POST"));
+        System.out.println(permissionManager.isPermitted("Customer", "/resource", "GET"));
+        System.out.println(permissionManager.isPermitted("", "/login", "POST"));
+        System.out.println(permissionManager.isPermitted("Customer", "/private", "POST"));
+        System.out.println(permissionManager.isPermitted("Customer", "/other", "POST"));
+        System.out.println(permissionManager.isPermitted("Superman", "/other", "POST"));
+        System.out.println(permissionManager.isPermitted("Superman", "/resource", "POST"));
     }
 }
