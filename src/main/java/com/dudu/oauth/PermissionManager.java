@@ -11,17 +11,17 @@ import java.util.*;
 public class PermissionManager {
     private final Logger logger = LogManager.getLogger(PermissionManager.class);
 
-    private PathNode urlGetTree;
-    private PathNode urlPostTree;
-    private PathNode urlPutTree;
-    private PathNode urlDeleteTree;
+    // Path Node is prefix by method
+    private static final String URL_TREE_ROOT_VALUE = "dudu";
+    private PathNode urlPublicTree;
+    private Map<String, PathNode> urlTreesByScope;
 
     public PermissionManager(String file) throws Exception {
         try (var in = new FileInputStream(file)) {
             var config = new JSONObject(new JSONTokener(in));
 
             // loading endpoints
-            List<ApiEndpoint> apiEndpoints = new ArrayList<>();
+            var apiEndpointMap = new HashMap<Long, ApiEndpoint>();
             var apiEndpointsJson = config.getJSONArray("ApiEndpoints");
             for (int i = 0; i < apiEndpointsJson.length(); i++) {
                 var apiEndpointJson = apiEndpointsJson.getJSONObject(i);
@@ -29,108 +29,72 @@ public class PermissionManager {
                 apiEndpoint.setApiEndpointId(apiEndpointJson.getLong("ApiEndpointId"));
                 apiEndpoint.setMethod(apiEndpointJson.getString("Method"));
                 apiEndpoint.setEndpoint(apiEndpointJson.getString("Endpoint"));
-                apiEndpoint.setPrivate(apiEndpointJson.has("IsPrivate") && apiEndpointJson.getBoolean("IsPrivate"));
                 apiEndpoint.setPublic(apiEndpointJson.has("IsPublic") && apiEndpointJson.getBoolean("IsPublic"));
 
-                apiEndpoints.add(apiEndpoint);
+                apiEndpointMap.put(apiEndpoint.getApiEndpointId(), apiEndpoint);
             }
 
             // scopes
-            Map<Long, Set<String>> apiEndpointScopes = new HashMap<>();
+            var scopeList = new ArrayList<Scope>();
             var scopes = config.getJSONArray("Scopes");
             for (int i = 0; i < scopes.length(); i++) {
                 var scopeJson = scopes.getJSONObject(i);
                 var scope = new Scope();
+                scope.setScopeName(scopeJson.getString("ScopeName"));
 
-                var scopeName = scopeJson.getString("ScopeName");
                 if (scopeJson.has("ApiEndpointIds")) {
                     var apiEndpointIdsJson = scopeJson.getJSONArray("ApiEndpointIds");
 
+                    scope.setEndpoints(new HashSet<>());
                     for (int j = 0; j < apiEndpointIdsJson.length(); j++) {
                         var apiEndpointId = apiEndpointIdsJson.getLong(j);
-
-                        apiEndpointScopes.computeIfAbsent(apiEndpointId, id -> new HashSet<>());
-                        apiEndpointScopes.get(apiEndpointId).add(scopeName);
+                        scope.getEndpoints().add(apiEndpointMap.get(apiEndpointId));
                     }
                 }
+
+                scopeList.add(scope);
             }
 
-            // building urltree
-            urlGetTree = new PathNode();
-            urlPostTree = new PathNode();
-            urlPutTree = new PathNode();
-            urlDeleteTree = new PathNode();
+            urlTreesByScope = new HashMap<>();
+            for (var scope : scopeList) {
+                PathNode urlTree = new PathNode(URL_TREE_ROOT_VALUE);
+                urlTreesByScope.put(scope.getScopeName(), urlTree);
 
-            for (var apiEndpoint : apiEndpoints) {
-                PathNode curNode;
+                for (var apiEndpoint : scope.getEndpoints())
+                    addApiEnpoint(urlTree, apiEndpoint);
+            }
 
-                if (apiEndpoint.getMethod().equals("GET"))
-                    curNode = urlGetTree;
-                else if (apiEndpoint.getMethod().equals("POST"))
-                    curNode = urlPostTree;
-                else if (apiEndpoint.getMethod().equals("PUT"))
-                    curNode = urlPutTree;
-                else if (apiEndpoint.getMethod().equals("DELETE"))
-                    curNode = urlDeleteTree;
-                else
-                    throw new IllegalStateException("Unknown ApiEndpoint method: " + apiEndpoint.getMethod());
-
-                for (var nodeValue : apiEndpoint.getEndpoint().split("/")) {
-                    if (nodeValue.equals(""))
-                        continue; // skip empty node value
-
-                    if (curNode.getChildren() == null)
-                        curNode.setChildren(new HashMap<>());
-
-                    PathNode nextNode = curNode.getChildren().get(nodeValue);
-                    if (nextNode == null) {
-                        nextNode = new PathNode();
-                        nextNode.setValue(nodeValue);
-                        curNode.getChildren().put(nodeValue, nextNode);
-                    }
-
-                    curNode = nextNode;
-                }
-
-                // endpoint node
-                curNode.setEndpoint(apiEndpoint);
-                var scopeSet = apiEndpointScopes.get(apiEndpoint.getApiEndpointId());
-                if (scopeSet == null)
-                    curNode.setScopes(new HashSet<>());
-                else
-                    curNode.setScopes(new HashSet<>(scopeSet));
+            urlPublicTree = new PathNode(URL_TREE_ROOT_VALUE);
+            for (var apiEndpoint : apiEndpointMap.values()) {
+                if (apiEndpoint.isPublic())
+                    addApiEnpoint(urlPublicTree, apiEndpoint);
             }
 
             logger.info("permission configured successfully");
         }
     }
 
-    /**
-     *
-     * @param root
-     * @param endpoint
-     * @return null on not found
-     */
-    private PathNode getEndpointNode(PathNode root, String endpoint) {
-        PathNode endpointNode = root;
-        for (var nodeValue : endpoint.split("/")) {
-            if (nodeValue.equals(""))
-                continue;
+    void addApiEnpoint(PathNode urlTree, ApiEndpoint apiEndpoint) {
+        List<String> nodeValueList = breakIntoNodes(apiEndpoint);
+        nodeValueList.remove(0);
 
-            PathNode next = null;
-            if (endpointNode.getChildren() != null)
-                next = endpointNode.getChildren().get(nodeValue);
+        var curNode = urlTree;
+        for (var nodeValue : nodeValueList) {
 
-            if (next == null)
-                next = endpointNode.getWildcardChild(); // try wildcard
+            if (curNode.getChildren() == null)
+                curNode.setChildren(new HashMap<>());
 
-            if (next == null)
-                return null;
+            PathNode nextNode = curNode.getChildren().get(nodeValue);
+            if (nextNode == null) {
+                nextNode = new PathNode(nodeValue);
+                curNode.getChildren().put(nodeValue, nextNode);
+            }
 
-            endpointNode = next;
+            curNode = nextNode;
         }
 
-        return endpointNode;
+        // endpoint node
+        curNode.setApiEndpoint(apiEndpoint);
     }
 
     /**
@@ -138,31 +102,65 @@ public class PermissionManager {
      * @param scope
      * @param endpoint
      * @param method
-     * @return null on endpoint not found
+     * @return strict mode, not found will return false
      */
-    public Boolean isPermitted(String scope, String endpoint, String method) {
-        PathNode endpointNode = null;
-        if (method.equals("GET"))
-            endpointNode = getEndpointNode(urlGetTree, endpoint);
-        else if (method.equals("POST"))
-            endpointNode = getEndpointNode(urlPostTree, endpoint);
-        else if (method.equals("PUT"))
-            endpointNode = getEndpointNode(urlPutTree, endpoint);
-        else if (method.equals("DELETE"))
-            endpointNode = getEndpointNode(urlDeleteTree, endpoint);
+    public boolean isPermitted(String scope, String endpoint, String method) {
+        var nodeValueList =  breakIntoNodes(endpoint, method);
 
-        if (endpointNode == null)
-            return null;
-
-        var apiEndpoint = endpointNode.getEndpoint();
-        if (apiEndpoint == null)
-            return null;
-
-        if (apiEndpoint.isPublic())
+        // check public tree
+        if (match(urlPublicTree, nodeValueList, 0) != null)
             return true;
 
-        var scopes = endpointNode.getScopes();
-        return scopes.contains(scope);
+        // check scope trees
+        var urlTree = urlTreesByScope.get(scope);
+        if (urlTree == null)
+            return false;
+
+        var apiEndpoint = match(urlTree, nodeValueList, 0);
+        return apiEndpoint != null;
     }
 
+    /**
+     *
+     * @param node
+     * @param nodeValueList
+     * @param pos
+     * @return null on not found
+     */
+    ApiEndpoint match(PathNode node, List<String> nodeValueList, int pos) {
+        String nodeValue = nodeValueList.get(pos);
+        if (!nodeValue.equals(node.getValue()) && !nodeValue.equals("*"))
+            return null;
+
+        if (nodeValueList.size() == pos-1)
+            return node.getApiEndpoint(); // found it
+
+        if (node.getChildren() == null)
+            return null; // not more child nodes to search
+
+        // continue searching
+        for (PathNode nextNode : node.getChildren().values()) {
+            var apiEndpoint = match(nextNode, nodeValueList, pos+1);
+            if (apiEndpoint != null)
+                return apiEndpoint;
+        }
+
+        // search exhausted.
+        return null;
+    }
+
+    private List<String> breakIntoNodes(ApiEndpoint apiEndpoint) {
+        return breakIntoNodes(apiEndpoint.getEndpoint(), apiEndpoint.getMethod());
+    }
+
+    private List<String> breakIntoNodes(String endpoint, String method) {
+        var nodeValueList = new ArrayList<String>();
+        nodeValueList.add(URL_TREE_ROOT_VALUE);
+        nodeValueList.add(method);
+        for (String nodeValue : endpoint.split("/"))
+            if (!nodeValue.equals(""))
+                nodeValueList.add(nodeValue);
+
+        return nodeValueList;
+    }
 }

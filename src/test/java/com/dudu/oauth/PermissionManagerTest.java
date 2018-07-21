@@ -1,6 +1,5 @@
-package com.dudu;
+package com.dudu.oauth;
 
-import com.dudu.oauth.PermissionManager;
 import org.junit.Assume;
 import org.junit.Before;
 import org.junit.Test;
@@ -28,4 +27,31 @@ public class PermissionManagerTest {
         System.out.println(permissionManager.isPermitted("Superman", "/other", "POST"));
         System.out.println(permissionManager.isPermitted("Superman", "/resource", "POST"));
     }
+
+    @Test
+    public void addApiEndpoint() throws Exception {
+        var tree = new PathNode("root");
+        var apiEndpoint = new ApiEndpoint();
+        apiEndpoint.setEndpoint("/bar");
+        permissionManager.addApiEnpoint(tree, apiEndpoint);
+
+        apiEndpoint = new ApiEndpoint();
+        apiEndpoint.setEndpoint("/bar/foo");
+        permissionManager.addApiEnpoint(tree, apiEndpoint);
+
+        apiEndpoint = new ApiEndpoint();
+        apiEndpoint.setEndpoint("/bar/goo");
+        permissionManager.addApiEnpoint(tree, apiEndpoint);
+
+        apiEndpoint = new ApiEndpoint();
+        apiEndpoint.setEndpoint("/pong");
+        permissionManager.addApiEnpoint(tree, apiEndpoint);
+
+        println("done");
+    }
+
+    private void println(String o) {
+        System.out.println(o);
+    }
+
 }

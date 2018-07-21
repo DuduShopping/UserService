@@ -14,9 +14,13 @@ public class PathNode {
     private String value;
 
     // nullable.
-    private ApiEndpoint endpoint;
+    private ApiEndpoint apiEndpoint;
 
     private Set<String> scopes;
+
+    public PathNode(String value) {
+        this.value = value;
+    }
 
     public Map<String, PathNode> getChildren() {
         return children;
@@ -34,12 +38,12 @@ public class PathNode {
         this.value = value;
     }
 
-    public ApiEndpoint getEndpoint() {
-        return endpoint;
+    public ApiEndpoint getApiEndpoint() {
+        return apiEndpoint;
     }
 
-    public void setEndpoint(ApiEndpoint endpoint) {
-        this.endpoint = endpoint;
+    public void setApiEndpoint(ApiEndpoint apiEndpoint) {
+        this.apiEndpoint = apiEndpoint;
     }
 
     public Set<String> getScopes() {
@@ -48,12 +52,5 @@ public class PathNode {
 
     public void setScopes(Set<String> scopes) {
         this.scopes = scopes;
-    }
-
-    public PathNode getWildcardChild() {
-        if (children == null)
-            return null;
-
-        return children.get("*");
     }
 }
