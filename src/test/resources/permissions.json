@@ -18,28 +18,37 @@
     },
     {
       "ApiEndpointId": 4,
-      "Method": "POST",
-      "Endpoint": "/private"
+      "Method": "GET",
+      "Endpoint": "/resource/bar"
     },
     {
       "ApiEndpointId": 5,
-      "Method": "POST",
-      "Endpoint": "/other"
+      "Method": "GET",
+      "Endpoint": "/resource/foo"
     },
     {
       "ApiEndpointId": 6,
+      "Method": "GET",
+      "Endpoint": "/ko/li/*"
+    },
+    {
+      "ApiEndpointId": 7,
+      "Method": "GET",
+      "Endpoint": "/ko/supermanOnly"
+    },{
+      "ApiEndpointId": 8,
       "Method": "POST",
-      "Endpoint": "/*"
+      "Endpoint": "/ko/dd"
     }
   ],
   "Scopes": [
     {
       "ScopeName": "Customer",
-      "ApiEndpointIds": [1,2]
+      "ApiEndpointIds": [1,2,4,5]
     },
     {
       "ScopeName": "Superman",
-      "ApiEndpointIds": [6]
+      "ApiEndpointIds": [6,7,8]
     },
   ]
 }

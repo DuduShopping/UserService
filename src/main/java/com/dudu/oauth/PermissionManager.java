@@ -57,44 +57,57 @@ public class PermissionManager {
 
             urlTreesByScope = new HashMap<>();
             for (var scope : scopeList) {
-                PathNode urlTree = new PathNode(URL_TREE_ROOT_VALUE);
-                urlTreesByScope.put(scope.getScopeName(), urlTree);
-
-                for (var apiEndpoint : scope.getEndpoints())
-                    addApiEnpoint(urlTree, apiEndpoint);
+                var apiEndpointSet = scope.getEndpoints();
+                var apiEndpointArray = new ApiEndpoint[apiEndpointSet.size()];
+                apiEndpointSet.toArray(apiEndpointArray);
+                urlTreesByScope.put(scope.getScopeName(), buildTree(apiEndpointArray));
             }
 
             urlPublicTree = new PathNode(URL_TREE_ROOT_VALUE);
+            var apiEndpointList = new ArrayList<ApiEndpoint>();
             for (var apiEndpoint : apiEndpointMap.values()) {
+
                 if (apiEndpoint.isPublic())
-                    addApiEnpoint(urlPublicTree, apiEndpoint);
+                    apiEndpointList.add(apiEndpoint);
+
             }
+            var apiEndpointArray = new ApiEndpoint[apiEndpointList.size()];
+            urlPublicTree = buildTree(apiEndpointList.toArray(apiEndpointArray));
 
             logger.info("permission configured successfully");
         }
     }
 
-    void addApiEnpoint(PathNode urlTree, ApiEndpoint apiEndpoint) {
-        List<String> nodeValueList = breakIntoNodes(apiEndpoint);
-        nodeValueList.remove(0);
+    PathNode buildTree(ApiEndpoint[] apiEndpoints) {
+        PathNode urlTree = new PathNode(URL_TREE_ROOT_VALUE);
 
-        var curNode = urlTree;
-        for (var nodeValue : nodeValueList) {
+        for (var apiEndpoint : apiEndpoints) {
+            List<String> nodeValueList = breakIntoNodes(apiEndpoint);
 
-            if (curNode.getChildren() == null)
-                curNode.setChildren(new HashMap<>());
+            // head node is already added
+            // FIXME, can we do better...
+            nodeValueList.remove(0);
 
-            PathNode nextNode = curNode.getChildren().get(nodeValue);
-            if (nextNode == null) {
-                nextNode = new PathNode(nodeValue);
-                curNode.getChildren().put(nodeValue, nextNode);
+            var curNode = urlTree;
+            for (var nodeValue : nodeValueList) {
+
+                if (curNode.getChildren() == null)
+                    curNode.setChildren(new HashMap<>());
+
+                PathNode nextNode = curNode.getChildren().get(nodeValue);
+                if (nextNode == null) {
+                    nextNode = new PathNode(nodeValue);
+                    curNode.getChildren().put(nextNode.getValue(), nextNode);
+                }
+
+                curNode = nextNode;
             }
 
-            curNode = nextNode;
+            // endpoint node
+            curNode.setApiEndpoint(apiEndpoint);
         }
 
-        // endpoint node
-        curNode.setApiEndpoint(apiEndpoint);
+        return urlTree;
     }
 
     /**
@@ -129,10 +142,10 @@ public class PermissionManager {
      */
     ApiEndpoint match(PathNode node, List<String> nodeValueList, int pos) {
         String nodeValue = nodeValueList.get(pos);
-        if (!nodeValue.equals(node.getValue()) && !nodeValue.equals("*"))
+        if (!nodeValue.equals(node.getValue()) && !node.getValue().equals("*"))
             return null;
 
-        if (nodeValueList.size() == pos-1)
+        if (nodeValueList.size() - 1 == pos)
             return node.getApiEndpoint(); // found it
 
         if (node.getChildren() == null)

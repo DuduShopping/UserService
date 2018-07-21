@@ -3,7 +3,11 @@ package com.dudu.oauth;
 import org.junit.Assume;
 import org.junit.Before;
 import org.junit.Test;
+
 import java.net.URL;
+
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
 
 
 public class PermissionManagerTest {
@@ -20,38 +24,16 @@ public class PermissionManagerTest {
 
     @Test
     public void isPublicPermitted() throws Exception {
-        System.out.println(permissionManager.isPermitted("Customer", "/resource", "GET"));
-        System.out.println(permissionManager.isPermitted("", "/login", "POST"));
-        System.out.println(permissionManager.isPermitted("Customer", "/private", "POST"));
-        System.out.println(permissionManager.isPermitted("Customer", "/other", "POST"));
-        System.out.println(permissionManager.isPermitted("Superman", "/other", "POST"));
-        System.out.println(permissionManager.isPermitted("Superman", "/resource", "POST"));
+        assertTrue(permissionManager.isPermitted("Customer", "/resource", "GET"));
+        assertTrue(permissionManager.isPermitted("Any_Scope", "/login", "POST"));
+        assertTrue(permissionManager.isPermitted("Customer", "/resource/bar/", "GET"));
+        assertTrue(permissionManager.isPermitted("Customer", "/resource/foo/", "GET"));
+        assertFalse(permissionManager.isPermitted("Customer", "/resource/*", "GET"));
+        assertFalse(permissionManager.isPermitted("Customer", "/unknown", "GET"));
+
+        assertTrue(permissionManager.isPermitted("Superman", "/ko/li/1", "GET"));
+        assertTrue(permissionManager.isPermitted("Superman", "/ko/dd", "POST"));
+        assertFalse(permissionManager.isPermitted("Superman", "/ko/dd", "GET"));
+        assertFalse(permissionManager.isPermitted("Superman", "/resource/bar", "GET"));
     }
-
-    @Test
-    public void addApiEndpoint() throws Exception {
-        var tree = new PathNode("root");
-        var apiEndpoint = new ApiEndpoint();
-        apiEndpoint.setEndpoint("/bar");
-        permissionManager.addApiEnpoint(tree, apiEndpoint);
-
-        apiEndpoint = new ApiEndpoint();
-        apiEndpoint.setEndpoint("/bar/foo");
-        permissionManager.addApiEnpoint(tree, apiEndpoint);
-
-        apiEndpoint = new ApiEndpoint();
-        apiEndpoint.setEndpoint("/bar/goo");
-        permissionManager.addApiEnpoint(tree, apiEndpoint);
-
-        apiEndpoint = new ApiEndpoint();
-        apiEndpoint.setEndpoint("/pong");
-        permissionManager.addApiEnpoint(tree, apiEndpoint);
-
-        println("done");
-    }
-
-    private void println(String o) {
-        System.out.println(o);
-    }
-
 }
