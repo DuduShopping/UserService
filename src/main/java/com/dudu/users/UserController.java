@@ -1,17 +1,17 @@
 package com.dudu.users;
 
 import com.dudu.common.CryptoUtil;
-import com.dudu.common.UserServiceDataSource;
+import com.dudu.database.UserServiceDataSource;
 import com.dudu.database.DatabaseHelper;
 import com.dudu.database.ZetaMap;
-import com.dudu.exception.BadRequestException;
-import com.dudu.exception.InternalServerException;
-import com.dudu.exception.NotFoundException;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.client.HttpClientErrorException;
+import org.springframework.web.client.HttpServerErrorException;
 
 import javax.sql.DataSource;
 import javax.validation.Valid;
@@ -46,13 +46,13 @@ public class UserController {
             var hashed = hashPassword(req.getPassword());
             var zmaps = databaseHelper.execUpdateToZetaMaps(conn, sql, new String[]{"UserId"}, req.getLogin(), hashed);
             if (zmaps.size() == 0)
-                throw new InternalServerException("");
+                throw new HttpServerErrorException(HttpStatus.INTERNAL_SERVER_ERROR);
 
             long id = zmaps.get(0).getLong("UserId");
             return getUser(id);
         } catch (Exception e) {
             logger.info(e);
-            throw new BadRequestException("Failed to create user", e);
+            throw new HttpClientErrorException(HttpStatus.BAD_REQUEST, "Failed to create user");
         }
     }
 
