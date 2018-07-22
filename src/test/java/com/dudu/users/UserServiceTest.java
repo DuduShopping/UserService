@@ -1,7 +1,7 @@
 package com.dudu.users;
 
-import com.dudu.database.UserServiceDataSource;
 import com.dudu.database.DataSourceConfiguration;
+import com.dudu.database.UserServiceDataSource;
 import org.junit.Assume;
 import org.junit.Before;
 import org.junit.Test;
@@ -12,25 +12,24 @@ import org.springframework.test.context.junit4.SpringRunner;
 
 @RunWith(value = SpringRunner.class)
 @ContextConfiguration(classes = {DataSourceConfiguration.class})
-public class UserControllerTest {
+public class UserServiceTest {
 
     @Autowired
-    private UserServiceDataSource source;
+    private UserServiceDataSource dataSource;
 
-    private UserController userController;
+    private UserService userService;
 
     @Before
     public void setup() {
-        Assume.assumeTrue(source != null);
-        userController = new UserController(source);
+        Assume.assumeTrue(dataSource != null);
+        userService = new UserService(dataSource);
     }
 
     @Test
     public void createUser() throws Exception {
         UserController.UserCreation userCreation = new UserController.UserCreation();
-        userCreation.setUsername("jack3");
-        userCreation.setPassword("test123");
 
-        User user = userController.createUser(userCreation);
+        User user = userService.createUser("jack4", "test123");
+        System.out.println("user created");
     }
 }

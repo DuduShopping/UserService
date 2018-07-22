@@ -1,9 +1,6 @@
 package com.dudu.users;
 
-import com.dudu.common.CryptoUtil;
-import com.dudu.database.UserServiceDataSource;
-import com.dudu.database.DatabaseHelper;
-import com.dudu.database.ZetaMap;
+import com.dudu.users.exceptions.UsernameUsed;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.springframework.http.HttpStatus;
@@ -13,24 +10,17 @@ import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.client.HttpServerErrorException;
 
-import javax.sql.DataSource;
 import javax.validation.Valid;
 import javax.validation.constraints.NotEmpty;
-import java.sql.Connection;
 import java.sql.SQLException;
-import java.util.List;
 
 @RestController
 public class UserController {
     private static final Logger logger = LogManager.getLogger(UserController.class);
-    private static final String SALT = "p@om^bcad3&yjena[jd!~si42*)[jdjk";
-    private DataSource source;
-    private DatabaseHelper databaseHelper;
+    private UserService userService;
 
-    public UserController(UserServiceDataSource source) {
-        logger.info("hihi");
-        this.source = source;
-        this.databaseHelper = DatabaseHelper.getHelper();
+    public UserController(UserService userService) {
+        this.userService = userService;
     }
 
     @RequestMapping(path = "/user/password", method = RequestMethod.GET)
@@ -40,38 +30,15 @@ public class UserController {
 
     @RequestMapping(value = "/user", method = RequestMethod.POST)
     public User createUser(@Valid UserCreation req) {
-        logger.info("creating a user: " + req.toString());
-        try (Connection conn = source.getConnection()) {
-            var sql = "INSERT INTO Users(Username, Password) VALUES (?,?) ";
-            var hashed = hashPassword(req.getPassword());
-            var zmaps = databaseHelper.execUpdateToZetaMaps(conn, sql, new String[]{"UserId"}, req.getUsername(), hashed);
-            if (zmaps.size() == 0)
-                throw new HttpServerErrorException(HttpStatus.INTERNAL_SERVER_ERROR);
-
-            long id = zmaps.get(0).getLong("UserId");
-            return getUser(id);
-        } catch (Exception e) {
-            logger.info(e);
+        try {
+            return userService.createUser(req.getUsername(), req.getPassword());
+        } catch (SQLException | IllegalStateException e) {
+            throw new HttpServerErrorException(HttpStatus.INTERNAL_SERVER_ERROR);
+        } catch (IllegalArgumentException e) {
             throw new HttpClientErrorException(HttpStatus.BAD_REQUEST, "Failed to create user");
+        } catch (UsernameUsed e) {
+            throw new HttpClientErrorException(HttpStatus.BAD_REQUEST, "Username is taken");
         }
-    }
-
-    private User getUser(long userId) {
-        try (Connection conn = source.getConnection()) {
-            String sql = "SELECT * FROM Users WHERE UserId = ?";
-            List<ZetaMap> zetaMaps = databaseHelper.execToZetaMaps(conn, sql, userId);
-            if (zetaMaps.size() == 0)
-                throw new IllegalArgumentException("User not found: UserId="+userId);
-
-            return User.from(zetaMaps.get(0));
-        } catch (SQLException e) {
-            logger.info(e);
-            throw new IllegalArgumentException("Failed to get user", e);
-        }
-    }
-
-    private String hashPassword(String password) {
-        return CryptoUtil.sha256base64(SALT + password);
     }
 
     public static class UpdatePassword {
