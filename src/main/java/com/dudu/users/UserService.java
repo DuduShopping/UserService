@@ -64,8 +64,22 @@ public class UserService {
         }
     }
 
-    public void updatePassword(String username, String oldPassword, String newPassword) throws UserNotFound, PasswordNotMatched, SQLException {
-        throw new SQLException("Not implemented yet");
+    public void updatePassword(long userId, String oldPassword, String newPassword) throws UserNotFound, PasswordNotMatched, SQLException {
+        try (Connection conn = source.getConnection()) {
+            var selectPassword = "SELECT Password FROM Users WHERE UserId =?";
+            var zetaMapList = databaseHelper.execToZetaMaps(conn, selectPassword, userId);
+            if (zetaMapList.size() == 0)
+                throw new UserNotFound();
+
+            var oldPasswordExpected = zetaMapList.get(0).getString("Password");
+            if (!oldPasswordExpected.equals(hashPassword(oldPassword)))
+                throw new PasswordNotMatched();
+
+            var updatePassword = "UPDATE Users SET Password = ? WHERE UserId = ?";
+            var c = databaseHelper.execUpdate(conn, updatePassword, hashPassword(newPassword), userId);
+            if (c != 1)
+                throw new SQLException("Can't update the user");
+        }
     }
 
     private String hashPassword(String password) {

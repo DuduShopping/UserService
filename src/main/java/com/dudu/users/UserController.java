@@ -1,12 +1,14 @@
 package com.dudu.users;
 
+import com.dudu.oauth.LoggedUser;
+import com.dudu.oauth.OAuthFilter;
+import com.dudu.users.exceptions.PasswordNotMatched;
+import com.dudu.users.exceptions.UserNotFound;
 import com.dudu.users.exceptions.UsernameUsed;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.springframework.http.HttpStatus;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestMethod;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.client.HttpServerErrorException;
 
@@ -23,9 +25,18 @@ public class UserController {
         this.userService = userService;
     }
 
-    @RequestMapping(path = "/user/password", method = RequestMethod.GET)
-    public void user(UpdatePassword req) {
-        return;
+    @RequestMapping(path = "/user/password", method = RequestMethod.PUT)
+    public void user(@RequestAttribute(name=OAuthFilter.LOGGED_USER) LoggedUser user, @Valid UpdatePassword req) {
+        try {
+            userService.updatePassword(user.getUserId(), req.oldPassword, req.newPassword);
+        } catch (SQLException e) {
+            throw new HttpServerErrorException(HttpStatus.INTERNAL_SERVER_ERROR);
+        } catch (UserNotFound userNotFound) {
+            throw new HttpClientErrorException(HttpStatus.BAD_REQUEST);
+        } catch (PasswordNotMatched passwordNotMatched) {
+            throw new HttpClientErrorException(HttpStatus.BAD_REQUEST, "Password is wrong");
+        }
+
     }
 
     @RequestMapping(value = "/user", method = RequestMethod.POST)

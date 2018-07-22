@@ -1,6 +1,21 @@
 {
   "ApiEndpoints": [
+    {
+      "ApiEndpointId": 1,
+      "Method": "POST",
+      "Endpoint": "/user",
+      "IsPublic": true
+    },
+    {
+      "ApiEndpointId": 2,
+      "Method": "PUT",
+      "Endpoint": "/user/password"
+    }
   ],
   "Scopes": [
+    {
+      "ScopeName": "user",
+      "ApiEndpointIds": [2]
+    }
   ]
 }

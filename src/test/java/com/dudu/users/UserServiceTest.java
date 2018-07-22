@@ -27,9 +27,12 @@ public class UserServiceTest {
 
     @Test
     public void createUser() throws Exception {
-        UserController.UserCreation userCreation = new UserController.UserCreation();
-
         User user = userService.createUser("jack4", "test123");
         System.out.println("user created");
+    }
+
+    @Test
+    public void updatePassword() throws Exception {
+        userService.updatePassword(1, "test100", "test123");
     }
 }
