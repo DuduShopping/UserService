@@ -121,7 +121,7 @@ public class PermissionManager {
         var nodeValueList =  breakIntoNodes(endpoint, method);
 
         // check public tree
-        if (match(urlPublicTree, nodeValueList, 0) != null)
+        if (isPublic(endpoint, method))
             return true;
 
         // check scope trees
@@ -131,6 +131,13 @@ public class PermissionManager {
 
         var apiEndpoint = match(urlTree, nodeValueList, 0);
         return apiEndpoint != null;
+    }
+
+    public boolean isPublic(String endpoint, String method) {
+        var nodeValueList =  breakIntoNodes(endpoint, method);
+
+        // check public tree
+        return match(urlPublicTree, nodeValueList, 0) != null;
     }
 
     /**

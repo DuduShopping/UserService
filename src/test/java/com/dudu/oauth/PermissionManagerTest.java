@@ -23,7 +23,7 @@ public class PermissionManagerTest {
     }
 
     @Test
-    public void isPublicPermitted() throws Exception {
+    public void isPermitted() throws Exception {
         assertTrue(permissionManager.isPermitted("Customer", "/resource", "GET"));
         assertTrue(permissionManager.isPermitted("Any_Scope", "/login", "POST"));
         assertTrue(permissionManager.isPermitted("Customer", "/resource/bar/", "GET"));
@@ -35,5 +35,12 @@ public class PermissionManagerTest {
         assertTrue(permissionManager.isPermitted("Superman", "/ko/dd", "POST"));
         assertFalse(permissionManager.isPermitted("Superman", "/ko/dd", "GET"));
         assertFalse(permissionManager.isPermitted("Superman", "/resource/bar", "GET"));
+    }
+
+    @Test
+    public void isPublic() throws Exception {
+        assertTrue(permissionManager.isPublic("/login", "POST"));
+        assertFalse(permissionManager.isPublic("/resource", "POST"));
+        assertFalse(permissionManager.isPublic("/resource", "GET"));
     }
 }

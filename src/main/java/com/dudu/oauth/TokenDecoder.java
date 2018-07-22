@@ -4,10 +4,7 @@ import org.json.JSONObject;
 import org.json.JSONTokener;
 import org.springframework.security.jwt.crypto.sign.RsaVerifier;
 
-import java.util.Base64;
-import java.util.Calendar;
-import java.util.HashMap;
-import java.util.Map;
+import java.util.*;
 
 import static java.nio.charset.StandardCharsets.US_ASCII;
 
@@ -28,7 +25,7 @@ public class TokenDecoder {
      * @return claims
      * @throws Exception token is invalid, token expired, or system error.
      */
-    public Map<String, Object> getClaims(String token) throws Exception {
+    public Claims getClaims(String token) throws Exception {
         var parts = token.split("\\.");
         if (parts.length != 3)
             throw new IllegalArgumentException("Expect token has three parts: header, claim and signature");
@@ -71,12 +68,19 @@ public class TokenDecoder {
             throw new IllegalArgumentException("Token time expired");
 
         // good token, extract all claims
-        var claimMap = new HashMap<String, Object>();
-        for (var key : claimsJson.keySet()) {
-            Object value = claimsJson.get(key);
-            claimMap.put(key, value);
+        var tokenObj = new Claims();
+        tokenObj.setIss(claimsJson.getString("iss"));
+        tokenObj.setExp(claimsJson.getLong("exp"));
+        tokenObj.setIat(claimsJson.getLong("iat"));
+        tokenObj.setJti(claimsJson.getLong("jti"));
+        if (claimsJson.has("UserId"))
+            tokenObj.setUserId(claimsJson.getLong("UserId"));
+        if (claimsJson.has("Scopes")) {
+            tokenObj.setScopes(new ArrayList<>());
+            for (var scope : claimsJson.getString("Scopes").split(","))
+                tokenObj.getScopes().add(scope);
         }
 
-        return claimMap;
+        return tokenObj;
     }
 }

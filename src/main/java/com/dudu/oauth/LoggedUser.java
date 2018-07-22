@@ -2,7 +2,7 @@ package com.dudu.oauth;
 
 public class LoggedUser {
     private long userId;
-    private String[] scopes;
+    private String token;
 
     public long getUserId() {
         return userId;
@@ -12,11 +12,11 @@ public class LoggedUser {
         this.userId = userId;
     }
 
-    public String[] getScopes() {
-        return scopes;
+    public String getToken() {
+        return token;
     }
 
-    public void setScopes(String[] scopes) {
-        this.scopes = scopes;
+    public void setToken(String token) {
+        this.token = token;
     }
 }
