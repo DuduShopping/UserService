@@ -28,7 +28,7 @@ public class UserControllerTest {
     @Test
     public void createUser() throws Exception {
         UserController.UserCreation userCreation = new UserController.UserCreation();
-        userCreation.setLogin("jack3");
+        userCreation.setUsername("jack3");
         userCreation.setPassword("test123");
 
         User user = userController.createUser(userCreation);

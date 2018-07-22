@@ -7,7 +7,7 @@ import java.util.Date;
 
 public class User {
     private long userId;
-    private String login;
+    private String username;
     private String password;
     private Date createdOn;
     private Date lastLogin;
@@ -18,7 +18,7 @@ public class User {
     public static User from(ZetaMap zetaMap) {
         User user = new User();
         user.setUserId(zetaMap.getLong("UserId"));
-        user.setLogin(zetaMap.getString("Login"));
+        user.setUsername(zetaMap.getString("Username"));
         user.setPassword(zetaMap.getString("Password"));
         user.setCreatedOn(zetaMap.getDate("CreatedOn"));
         user.setLastLogin(zetaMap.getDate("LastLogin"));
@@ -33,12 +33,12 @@ public class User {
         this.userId = userId;
     }
 
-    public String getLogin() {
-        return login;
+    public String getUsername() {
+        return username;
     }
 
-    public void setLogin(String login) {
-        this.login = login;
+    public void setUsername(String username) {
+        this.username = username;
     }
 
     public String getPassword() {

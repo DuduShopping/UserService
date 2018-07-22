@@ -42,9 +42,9 @@ public class UserController {
     public User createUser(@Valid UserCreation req) {
         logger.info("creating a user: " + req.toString());
         try (Connection conn = source.getConnection()) {
-            var sql = "INSERT INTO Users(Login, Password) VALUES (?,?) ";
+            var sql = "INSERT INTO Users(Username, Password) VALUES (?,?) ";
             var hashed = hashPassword(req.getPassword());
-            var zmaps = databaseHelper.execUpdateToZetaMaps(conn, sql, new String[]{"UserId"}, req.getLogin(), hashed);
+            var zmaps = databaseHelper.execUpdateToZetaMaps(conn, sql, new String[]{"UserId"}, req.getUsername(), hashed);
             if (zmaps.size() == 0)
                 throw new HttpServerErrorException(HttpStatus.INTERNAL_SERVER_ERROR);
 
@@ -100,17 +100,17 @@ public class UserController {
 
     public static class UserCreation {
         @NotEmpty
-        private String login;
+        private String username;
 
         @NotEmpty
         private String password;
 
-        public String getLogin() {
-            return login;
+        public String getUsername() {
+            return username;
         }
 
-        public void setLogin(String login) {
-            this.login = login;
+        public void setUsername(String username) {
+            this.username = username;
         }
 
         public String getPassword() {
