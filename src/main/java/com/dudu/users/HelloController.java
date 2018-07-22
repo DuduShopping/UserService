@@ -1,7 +1,7 @@
 package com.dudu.users;
 
-import com.dudu.OAuthFilter;
-import com.dudu.common.LoggedUser;
+import com.dudu.oauth.OAuthFilter;
+import com.dudu.oauth.LoggedUser;
 import org.springframework.web.bind.annotation.RequestAttribute;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;

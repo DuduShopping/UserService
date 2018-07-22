@@ -1,4 +1,4 @@
-package com.dudu.common;
+package com.dudu.database;
 
 import com.zaxxer.hikari.HikariConfig;
 import com.zaxxer.hikari.HikariDataSource;

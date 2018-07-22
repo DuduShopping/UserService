@@ -1,6 +1,7 @@
 package com.dudu.users;
 
-import com.dudu.common.UserServiceDataSource;
+import com.dudu.database.UserServiceDataSource;
+import com.dudu.database.DataSourceConfiguration;
 import org.junit.Assume;
 import org.junit.Before;
 import org.junit.Test;
@@ -10,7 +11,7 @@ import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringRunner;
 
 @RunWith(value = SpringRunner.class)
-@ContextConfiguration(classes = {com.dudu.DataSourceConfiguration.class})
+@ContextConfiguration(classes = {DataSourceConfiguration.class})
 public class UserControllerTest {
 
     @Autowired

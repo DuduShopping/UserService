@@ -1,4 +1,4 @@
-package com.dudu.common;
+package com.dudu.oauth;
 
 public class LoggedUser {
     private long userId;
