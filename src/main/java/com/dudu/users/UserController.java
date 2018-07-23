@@ -7,11 +7,13 @@ import com.dudu.users.exceptions.UserNotFound;
 import com.dudu.users.exceptions.UsernameUsed;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.client.HttpServerErrorException;
 
+import javax.servlet.http.HttpServletRequest;
 import javax.validation.Valid;
 import javax.validation.constraints.NotEmpty;
 import java.sql.SQLException;
@@ -21,13 +23,18 @@ public class UserController {
     private static final Logger logger = LogManager.getLogger(UserController.class);
     private UserService userService;
 
+    @Autowired
+    private HttpServletRequest httpServletRequest;
+
     public UserController(UserService userService) {
         this.userService = userService;
     }
 
-    @RequestMapping(path = "/user/password", method = RequestMethod.PUT)
-    public void user(@RequestAttribute(name=OAuthFilter.LOGGED_USER) LoggedUser user, @Valid UpdatePassword req) {
+    @PutMapping(value = "/user/password")
+    public void updatePassword(@Valid UpdatePassword req) {
+        logger.debug("password");
         try {
+            LoggedUser user = (LoggedUser) httpServletRequest.getAttribute(OAuthFilter.LOGGED_USER);
             userService.updatePassword(user.getUserId(), req.oldPassword, req.newPassword);
         } catch (SQLException e) {
             throw new HttpServerErrorException(HttpStatus.INTERNAL_SERVER_ERROR);
@@ -39,7 +46,7 @@ public class UserController {
 
     }
 
-    @RequestMapping(value = "/user", method = RequestMethod.POST)
+    @PostMapping(value = "/user")
     public User createUser(@Valid UserCreation req) {
         try {
             return userService.createUser(req.getUsername(), req.getPassword());

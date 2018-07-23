@@ -59,7 +59,7 @@ public class OAuthFilter extends GenericFilterBean {
         if (!authHeader.startsWith("Bearer"))
             throw new HttpClientErrorException(HttpStatus.UNAUTHORIZED, "Expect Bearer authentication");
 
-        var token = authHeader.substring("Bearer".length());
+        var token = authHeader.substring("Bearer".length()).trim();
         Claims claims;
         try {
             claims = tokenDecoder.getClaims(token);
