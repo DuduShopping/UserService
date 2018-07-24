@@ -14,7 +14,7 @@
   ],
   "Scopes": [
     {
-      "ScopeName": "user",
+      "ScopeName": "customer",
       "ApiEndpointIds": [2]
     }
   ]

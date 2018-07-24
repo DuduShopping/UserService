@@ -53,6 +53,11 @@ public class DatabaseHelper {
         }
     }
 
+    public boolean execAndCheckNotEmpty(Connection con, String sql, Object... parameters) throws SQLException {
+        List<ZetaMap> zetaMapList = execToZetaMaps(con, sql, parameters);
+        return zetaMapList.size() != 0;
+    }
+
     public List<ZetaMap> execToZetaMaps(Connection con, String sql) throws SQLException {
         return execToZetaMaps(con, sql, new Object[]{});
     }
