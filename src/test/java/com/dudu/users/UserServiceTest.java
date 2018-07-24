@@ -27,7 +27,7 @@ public class UserServiceTest {
 
     @Test
     public void createUser() throws Exception {
-        User user = userService.createUser("jack4", "test123");
+        User user = userService.createUser("jack", "test123", UserService.USER_ROLE_CUSTOMER);
         System.out.println("user created");
     }
 

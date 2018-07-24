@@ -1,6 +1,5 @@
 package com.dudu.users;
 
-import com.dudu.common.CryptoUtil;
 import com.dudu.database.DatabaseHelper;
 import com.dudu.database.UserServiceDataSource;
 import com.dudu.database.ZetaMap;
@@ -18,13 +17,16 @@ import java.util.List;
 @Component
 public class UserService {
     private static final Logger logger = LogManager.getLogger(UserService.class);
-    private static final String SALT = "p@om^bcad3&yjena[jd!~si42*)[jdjk";
+    public static final char USER_ROLE_CUSTOMER = 'C';
+
     private UserServiceDataSource source;
     private DatabaseHelper databaseHelper;
+    private PasswordHasher passwordHasher;
 
     public UserService(UserServiceDataSource source) {
         this.source = source;
         this.databaseHelper = DatabaseHelper.getHelper();
+        this.passwordHasher = PasswordHasher.getInstance();
     }
 
     public User getUser(long userId) throws IllegalArgumentException, SQLException, UserNotFound {
@@ -38,7 +40,7 @@ public class UserService {
         }
     }
 
-    public User createUser(String username, String password) throws IllegalArgumentException, SQLException, IllegalStateException, UsernameUsed {
+    public User createUser(String username, String password, char role) throws IllegalArgumentException, SQLException, IllegalStateException, UsernameUsed {
         try (Connection conn = source.getConnection()) {
             // check username is user or not
             var sql = "SELECT UserId FROM Users WHERE Username = ?";
@@ -47,9 +49,9 @@ public class UserService {
                 throw new UsernameUsed();
 
             // create user
-            sql = "INSERT INTO Users(Username, Password) VALUES (?,?) ";
-            var hashed = hashPassword(password);
-            zmaps = databaseHelper.execUpdateToZetaMaps(conn, sql, new String[]{"UserId"}, username, hashed);
+            sql = "INSERT INTO Users(Username, Password, Role) VALUES (?,?,?) ";
+            var hashed = passwordHasher.hashPassword(password);
+            zmaps = databaseHelper.execUpdateToZetaMaps(conn, sql, new String[]{"UserId"}, username, hashed, USER_ROLE_CUSTOMER);
             if (zmaps.size() == 0)
                 throw new IllegalStateException("Expect UserId generated");
 
@@ -72,18 +74,14 @@ public class UserService {
                 throw new UserNotFound();
 
             var oldPasswordExpected = zetaMapList.get(0).getString("Password");
-            if (!oldPasswordExpected.equals(hashPassword(oldPassword)))
+            if (!oldPasswordExpected.equals(passwordHasher.hashPassword(oldPassword)))
                 throw new PasswordNotMatched();
 
             var updatePassword = "UPDATE Users SET Password = ? WHERE UserId = ?";
-            var c = databaseHelper.execUpdate(conn, updatePassword, hashPassword(newPassword), userId);
+            var c = databaseHelper.execUpdate(conn, updatePassword, passwordHasher.hashPassword(newPassword), userId);
             if (c != 1)
                 throw new SQLException("Can't update the user");
         }
-    }
-
-    private String hashPassword(String password) {
-        return CryptoUtil.sha256base64(SALT + password);
     }
 
 }

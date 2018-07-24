@@ -46,10 +46,10 @@ public class UserController {
 
     }
 
-    @PostMapping(value = "/user")
-    public User createUser(@Valid UserCreation req) {
+    @PostMapping(value = "/user/customer")
+    public User createUser(@Valid CustomerUserCreation req) {
         try {
-            return userService.createUser(req.getUsername(), req.getPassword());
+            return userService.createUser(req.getUsername(), req.getPassword(), UserService.USER_ROLE_CUSTOMER);
         } catch (SQLException | IllegalStateException e) {
             throw new HttpServerErrorException(HttpStatus.INTERNAL_SERVER_ERROR);
         } catch (IllegalArgumentException e) {
@@ -83,7 +83,7 @@ public class UserController {
         }
     }
 
-    public static class UserCreation {
+    public static class CustomerUserCreation {
         @NotEmpty
         private String username;
 

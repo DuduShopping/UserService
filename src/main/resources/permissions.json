@@ -3,7 +3,7 @@
     {
       "ApiEndpointId": 1,
       "Method": "POST",
-      "Endpoint": "/user",
+      "Endpoint": "/user/customer",
       "IsPublic": true
     },
     {
