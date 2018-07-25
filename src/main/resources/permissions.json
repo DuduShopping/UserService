@@ -13,14 +13,18 @@
     },{
       "ApiEndpointId": 3,
       "Method": "POST",
-      "Endpoint": "/authenticate",
+      "Endpoint": "/auth/authenticate",
       "IsPublic": true
+    },{
+      "ApiEndpointId": 4,
+      "Method": "POST",
+      "Endpoint": "/auth/refreshToken"
     }
   ],
   "Scopes": [
     {
       "ScopeName": "customer",
-      "ApiEndpointIds": [2]
+      "ApiEndpointIds": [2,4]
     }
   ]
 }
