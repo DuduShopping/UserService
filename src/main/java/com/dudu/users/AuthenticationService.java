@@ -44,7 +44,7 @@ public class AuthenticationService {
      */
     public String login(String username, String password) throws UserNotFound, PasswordNotMatched, SQLException {
         try (Connection conn = source.getConnection()) {
-            String selectUser = "SELECT UserId FROM Users WHERE Username = ?";
+            String selectUser = "SELECT UserId, Role FROM Users WHERE Username = ?";
             var zetaMapList = databaseHelper.execToZetaMaps(conn, selectUser, username);
             if (zetaMapList.size() == 0)
                 throw new UserNotFound();
@@ -55,7 +55,13 @@ public class AuthenticationService {
                 throw new PasswordNotMatched();
 
             // authenticated, issue token.
-            return tokenIssuer.issue(userId, Arrays.asList("customer"));
+            var role = zetaMapList.get(0).getChar("Role");
+            if (role == 'C')
+                return tokenIssuer.issue(userId, Arrays.asList("Customer"));
+            else if (role == 'S')
+                return tokenIssuer.issue(userId, Arrays.asList("SaleAgent"));
+            else
+                throw new UserNotFound();
         }
     }
 

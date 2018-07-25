@@ -23,7 +23,10 @@
   ],
   "Scopes": [
     {
-      "ScopeName": "customer",
+      "ScopeName": "Customer",
+      "ApiEndpointIds": [2,4]
+    },{
+      "ScopeName": "SaleAgent",
       "ApiEndpointIds": [2,4]
     }
   ]
