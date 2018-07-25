@@ -10,6 +10,11 @@
       "ApiEndpointId": 2,
       "Method": "PUT",
       "Endpoint": "/user/password"
+    },{
+      "ApiEndpointId": 3,
+      "Method": "POST",
+      "Endpoint": "/authenticate",
+      "IsPublic": true
     }
   ],
   "Scopes": [
