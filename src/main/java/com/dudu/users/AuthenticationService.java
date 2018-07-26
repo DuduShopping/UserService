@@ -45,17 +45,17 @@ public class AuthenticationService {
     public String login(String username, String password) throws UserNotFound, PasswordNotMatched, SQLException {
         try (Connection conn = source.getConnection()) {
             String selectUser = "SELECT UserId, Role FROM Users WHERE Username = ?";
-            var zetaMapList = databaseHelper.execToZetaMaps(conn, selectUser, username);
-            if (zetaMapList.size() == 0)
+            var databaseResult = databaseHelper.query(conn, selectUser, username);
+            if (databaseResult.isEmpty())
                 throw new UserNotFound();
 
-            var userId = zetaMapList.get(0).getLong("UserId");
+            var userId = databaseResult.get(0).getLong("UserId");
             String checkPassword = "SELECT Username FROM Users WHERE UserId = ? AND Password = ?";
-            if (!databaseHelper.execAndCheckNotEmpty(conn, checkPassword, userId, passwordHasher.hashPassword(password)))
+            if (!databaseHelper.notEmpty(conn, checkPassword, userId, passwordHasher.hashPassword(password)))
                 throw new PasswordNotMatched();
 
             // authenticated, issue token.
-            var role = zetaMapList.get(0).getChar("Role");
+            var role = databaseResult.get(0).getChar("Role");
             if (role == 'C')
                 return tokenIssuer.issue(userId, Arrays.asList("Customer"));
             else if (role == 'S')

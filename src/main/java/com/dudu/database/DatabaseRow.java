@@ -14,12 +14,12 @@ import java.util.LinkedHashMap;
 /**
  * Created by chaojiewang on 1/29/18.
  */
-public class ZetaMap extends LinkedHashMap<String, Object> {
-    private static final Logger logger = LogManager.getLogger(ZetaMap.class);
+public class DatabaseRow extends LinkedHashMap<String, Object> {
+    private static final Logger logger = LogManager.getLogger(DatabaseRow.class);
 
-    public ZetaMap() {}
+    public DatabaseRow() {}
 
-    public ZetaMap(ResultSet rs) throws SQLException {
+    public DatabaseRow(ResultSet rs) throws SQLException {
         ResultSetMetaData meta = rs.getMetaData();
         for (int i = 1; i <= meta.getColumnCount(); i++) {
             String columnName = meta.getColumnName(i);

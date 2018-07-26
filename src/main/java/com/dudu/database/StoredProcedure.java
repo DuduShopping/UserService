@@ -28,7 +28,7 @@ public class StoredProcedure {
             parameters.put(name, value);
     }
 
-    public List<ZetaMap> execToZetaMaps() throws SQLException {
+    public DatabaseResult query() throws SQLException {
         StringBuilder sql = new StringBuilder();
         List<String> keys = new ArrayList<>(parameters.keySet());
         sql.append("EXEC  ").append(spName).append(" ");
@@ -50,7 +50,7 @@ public class StoredProcedure {
                 sp.setObject(i+1, val);
             }
 
-            return DatabaseHelper.getHelper().execToZetaMaps(sp);
+            return DatabaseHelper.getHelper().query(sp);
         }
     }
 }

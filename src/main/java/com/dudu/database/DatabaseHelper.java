@@ -18,26 +18,22 @@ public class DatabaseHelper {
         return helper;
     }
 
-    public static void setHelper(DatabaseHelper helper) {
-        DatabaseHelper.helper = helper;
-    }
-
     private static DatabaseHelper helper = new DatabaseHelper();
 
     private DatabaseHelper() {}
 
-    public List<ZetaMap> execToZetaMaps(PreparedStatement ps) throws SQLException {
+    public DatabaseResult query(PreparedStatement ps) throws SQLException {
         try (ResultSet rs = ps.executeQuery()) {
-            ArrayList<ZetaMap> maps = new ArrayList<>();
+            DatabaseResult result = new DatabaseResult();
             while (rs.next())
-                maps.add(new ZetaMap(rs));
+                result.add(new DatabaseRow(rs));
 
-            return maps;
+            return result;
         }
     }
 
-    public List<ZetaMap> execToZetaMaps(Connection con, String sql, Object... parameters) throws SQLException {
-        logger.info("execToZetaMap: " + sql);
+    public DatabaseResult query(Connection con, String sql, Object... parameters) throws SQLException {
+        logger.info("query: " + sql);
         try (PreparedStatement ps = con.prepareStatement(sql)) {
             for (int i = 1; i <= parameters.length; i++) {
                 Object param = parameters[i-1];
@@ -49,17 +45,17 @@ public class DatabaseHelper {
                     ps.setObject(i, param);
             }
 
-            return execToZetaMaps(ps);
+            return query(ps);
         }
     }
 
-    public boolean execAndCheckNotEmpty(Connection con, String sql, Object... parameters) throws SQLException {
-        List<ZetaMap> zetaMapList = execToZetaMaps(con, sql, parameters);
-        return zetaMapList.size() != 0;
+    public boolean notEmpty(Connection con, String sql, Object... parameters) throws SQLException {
+        DatabaseResult result = query(con, sql, parameters);
+        return !result.isEmpty();
     }
 
-    public List<ZetaMap> execToZetaMaps(Connection con, String sql) throws SQLException {
-        return execToZetaMaps(con, sql, new Object[]{});
+    public DatabaseResult query(Connection con, String sql) throws SQLException {
+        return query(con, sql, new Object[]{});
     }
 
     /**
@@ -74,8 +70,8 @@ public class DatabaseHelper {
      *         or (2) 0 for SQL statements that return nothing
      * @throws SQLException
      */
-    public int execUpdate(Connection con, String sql, Object... parameters) throws SQLException {
-        logger.info("execUpdate: " + sql);
+    public int update(Connection con, String sql, Object... parameters) throws SQLException {
+        logger.info("update: " + sql);
         try (PreparedStatement ps = con.prepareStatement(sql)) {
             for (int i = 1; i <= parameters.length; i++) {
                 Object param = parameters[i-1];
@@ -100,7 +96,7 @@ public class DatabaseHelper {
      * @return
      * @throws SQLException
      */
-    public int execUpdate(PreparedStatement ps) throws SQLException {
+    public int update(PreparedStatement ps) throws SQLException {
         return ps.executeUpdate();
     }
 
@@ -113,7 +109,7 @@ public class DatabaseHelper {
      * @return
      * @throws SQLException
      */
-    public List<ZetaMap> execUpdateToZetaMaps(Connection con, String sql, String[] generatedKeys, Object... parameters) throws SQLException {
+    public DatabaseResult updateAndGetKey(Connection con, String sql, String[] generatedKeys, Object... parameters) throws SQLException {
         logger.info("execUpdate: " + sql);
         try (PreparedStatement ps = con.prepareStatement(sql, generatedKeys)) {
             for (int i = 1; i <= parameters.length; i++) {
@@ -128,15 +124,15 @@ public class DatabaseHelper {
 
             ps.executeUpdate();
             ResultSet rs = ps.getGeneratedKeys();
-            List<ZetaMap> zetaMaps = new ArrayList<>();
+            DatabaseResult result = new DatabaseResult();
             while (rs.next()) {
-                ZetaMap map = new ZetaMap();
+                DatabaseRow row = new DatabaseRow();
                 for (int i = 1; i <= generatedKeys.length; i++)
-                    map.put(generatedKeys[i-1], rs.getObject(i));
-                zetaMaps.add(map);
+                    row.put(generatedKeys[i-1], rs.getObject(i));
+                result.add(row);
             }
 
-            return zetaMaps;
+            return result;
         }
     }
 }

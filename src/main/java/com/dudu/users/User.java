@@ -1,6 +1,6 @@
 package com.dudu.users;
 
-import com.dudu.database.ZetaMap;
+import com.dudu.database.DatabaseRow;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 
 import java.util.Date;
@@ -15,7 +15,7 @@ public class User {
     @JsonIgnore
     private int loginAttempts;
 
-    public static User from(ZetaMap zetaMap) {
+    public static User from(DatabaseRow zetaMap) {
         User user = new User();
         user.setUserId(zetaMap.getLong("UserId"));
         user.setUsername(zetaMap.getString("Username"));
