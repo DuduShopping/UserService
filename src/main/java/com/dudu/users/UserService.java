@@ -6,8 +6,6 @@ import com.dudu.database.UserServiceDataSource;
 import com.dudu.users.exceptions.PasswordNotMatched;
 import com.dudu.users.exceptions.UserNotFound;
 import com.dudu.users.exceptions.UsernameUsed;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
 import org.springframework.stereotype.Component;
 
 import java.sql.Connection;
@@ -15,7 +13,6 @@ import java.sql.SQLException;
 
 @Component
 public class UserService {
-    private static final Logger logger = LogManager.getLogger(UserService.class);
     public static final char USER_ROLE_CUSTOMER = 'C';
 
     private UserServiceDataSource source;

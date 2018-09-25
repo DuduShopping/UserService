@@ -5,8 +5,9 @@ import com.dudu.oauth.OAuthFilter;
 import com.dudu.users.exceptions.PasswordNotMatched;
 import com.dudu.users.exceptions.UserNotFound;
 import com.dudu.users.exceptions.UsernameUsed;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
@@ -20,7 +21,7 @@ import java.sql.SQLException;
 
 @RestController
 public class UserController {
-    private static final Logger logger = LogManager.getLogger(UserController.class);
+    private static final Logger logger = LoggerFactory.getLogger(UserController.class);
     private UserService userService;
 
     @Autowired

@@ -7,8 +7,8 @@ import com.dudu.oauth.TokenDecoder;
 import com.dudu.users.exceptions.InvalidToken;
 import com.dudu.users.exceptions.PasswordNotMatched;
 import com.dudu.users.exceptions.UserNotFound;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -23,7 +23,7 @@ import java.sql.SQLException;
 
 @RestController
 public class AuthenticationController {
-    private static final Logger logger = LogManager.getLogger(AuthenticationController.class);
+    private static final Logger logger = LoggerFactory.getLogger(AuthenticationController.class);
     private AuthenticationService authenticationService;
     private TokenDecoder tokenDecoder;
 

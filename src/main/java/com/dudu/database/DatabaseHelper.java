@@ -1,18 +1,16 @@
 package com.dudu.database;
 
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.sql.*;
-import java.util.ArrayList;
 import java.util.Date;
-import java.util.List;
 
 /**
  * Created by chaojiewang on 1/29/18.
  */
 public class DatabaseHelper {
-    private static final Logger logger = LogManager.getLogger(DatabaseHelper.class);
+    private static final Logger logger = LoggerFactory.getLogger(DatabaseHelper.class);
 
     public static DatabaseHelper getHelper() {
         return helper;
