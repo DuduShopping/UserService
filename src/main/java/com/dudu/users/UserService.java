@@ -47,7 +47,7 @@ public class UserService {
             // create user
             sql = "INSERT INTO Users(Username, Password, Role) VALUES (?,?,?) ";
             var hashed = passwordHasher.hashPassword(password);
-            databaseResult = databaseHelper.updateAndGetKey(conn, sql, new String[]{"UserId"}, username, hashed, USER_ROLE_CUSTOMER);
+            databaseResult = databaseHelper.updateAndGetKey(conn, sql, new String[]{"UserId"}, username, hashed, role);
             if (databaseResult.isEmpty())
                 throw new IllegalStateException("Expect UserId generated");
 
