@@ -18,6 +18,8 @@ import javax.servlet.http.HttpServletRequest;
 import javax.validation.Valid;
 import javax.validation.constraints.NotEmpty;
 import java.sql.SQLException;
+import java.util.LinkedHashMap;
+import java.util.Map;
 
 @RestController
 public class UserController {
@@ -38,24 +40,33 @@ public class UserController {
             LoggedUser user = (LoggedUser) httpServletRequest.getAttribute(OAuthFilter.LOGGED_USER);
             userService.updatePassword(user.getUserId(), req.oldPassword, req.newPassword);
         } catch (SQLException e) {
+            logger.warn("", e);
             throw new HttpServerErrorException(HttpStatus.INTERNAL_SERVER_ERROR);
         } catch (UserNotFound userNotFound) {
+            logger.warn("", userNotFound);
             throw new HttpClientErrorException(HttpStatus.BAD_REQUEST);
         } catch (PasswordNotMatched passwordNotMatched) {
+            logger.warn("", passwordNotMatched);
             throw new HttpClientErrorException(HttpStatus.BAD_REQUEST, "Password is wrong");
         }
 
     }
 
     @PostMapping(value = "/user/customer")
-    public User createUser(@Valid CustomerUserCreation req) {
+    public Map<String, Object> createUser(@Valid CustomerUserCreation req) {
+        Map<String, Object> result = new LinkedHashMap<>();
         try {
-            return userService.createUser(req.getUsername(), req.getPassword(), UserService.USER_ROLE_CUSTOMER);
+            User user = userService.createUser(req.getUsername(), req.getPassword(), UserService.USER_ROLE_CUSTOMER);
+            result.put("ok", true);
+            return result;
         } catch (SQLException | IllegalStateException e) {
+            logger.warn("", e);
             throw new HttpServerErrorException(HttpStatus.INTERNAL_SERVER_ERROR);
         } catch (IllegalArgumentException e) {
+            logger.warn("", e);
             throw new HttpClientErrorException(HttpStatus.BAD_REQUEST, "Failed to create user");
         } catch (UsernameUsed e) {
+            logger.warn("", e);
             throw new HttpClientErrorException(HttpStatus.BAD_REQUEST, "Username is taken");
         }
     }
